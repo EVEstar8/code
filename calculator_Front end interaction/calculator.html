@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Caculator</title>
+    <style>
+        #result {
+            font-size: 24px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body> 
+    <script>
+        alert("Welcome to my calculator ^_^")
+        console.log("Welcome to my calculator ^_^")
+    </script>
+    <div class="calculator">
+        <input type="text" id="result" readonly>
+        <div class="buttons">
+            <button onclick="clearKey()">C</button>
+            <button onclick="deleteLastChar()">Del</button>
+            <button onclick="addChar('(')">(</button>
+            <button onclick="addChar(')')">)</button>
+            <button onclick="addChar('7')">7</button>
+            <button onclick="addChar('8')">8</button>
+            <button onclick="addChar('9')">9</button>
+            <button onclick="addChar('/')">/</button>
+            <button onclick="addChar('4')">4</button>
+            <button onclick="addChar('5')">5</button>
+            <button onclick="addChar('6')">6</button>
+            <button onclick="addChar('*')">*</button>
+            <button onclick="addChar('1')">1</button>
+            <button onclick="addChar('2')">2</button>
+            <button onclick="addChar('3')">3</button>
+            <button onclick="addChar('-')">-</button>
+            <button onclick="addChar('.')">.</button>
+            <button onclick="addChar('0')">0</button>
+            <button onclick="calculateResult()">=</button>
+            <button onclick="addChar('+')">+</button>
+            <button onclick="calculateSin()">Sin</button>
+            <button onclick="calculateCos()">Cos</button>
+            <button onclick="calculatePower()">^</button>
+            <button onclick="calculateSquareRoot()">√</button>
+        </div>
+    </div>
+    <script>
+        
+        function clearKey() { 
+            document.getElementById("result").value = ''; // Clear the value of the result text box
+        } 
+         
+        function deleteLastChar() { 
+            let result = document.getElementById("result").value;
+            document.getElementById("result").value = result.slice(0, -1); // Delete the last character of the result text box
+        }
+         
+        function addChar(char) {
+            let result = document.getElementById("result").value;
+            document.getElementById("result").value = result + char; // Add a character to the end of the result text box
+        }
+         
+        function calculateResult() {
+  let result = document.getElementById("result").value;
+  let calculatedResult = eval(result);
+
+  fetch('/api/calculator_history', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      expression: result,
+      result: calculatedResult
+    })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Error inserting data to MySQL database');
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log(data);
+  })
+  .catch(error => {
+    console.error(error);
+  });
+
+  document.getElementById("result").value = calculatedResult;
+}
+         
+        function calculatePower() {
+            let result = document.getElementById("result").value; 
+            let power = 2; // Specify the value of the exponent, for example 2 means calculate the square
+            let calculatedResult = Math.pow(eval(result), power); // Calculate the result raised to the power of n
+            document.getElementById("result").value = calculatedResult; // Assign the calculated result to the result text box
+        }
+         
+        function calculateSquareRoot() {
+            let result = document.getElementById("result").value;
+            let calculatedResult = Math.sqrt(eval(result)); // Calculate the square root of the result
+            document.getElementById("result").value = calculatedResult; // Assign the calculated result to the result text box
+        }
+         
+      
+        function calculateCos() {
+            try {
+                let result = document.getElementById("result");
+                result.value = Math.cos(eval(result.value)); // Calculate the cosine of the result
+            } catch (error) {
+                result.value = 'ERROR';
+            }
+        }
+
+        function calculateSin() {
+            try {
+            let result = document.getElementById("result");
+            result.value = Math.sin(eval(result.value)); // Calculate the sine of the result
+        } catch (error) {
+            result.value = 'ERROR';
+        }
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+  fetch('/api/calculator_history')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Error querying data from MySQL database');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log(data);
+      const historyList = document.getElementById('history-list');
+      data.forEach(item => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${item.expression} = ${item.result}`;
+        historyList.appendChild(listItem);
+      });
+    })
+    .catch(error => {
+      console.error(error);
+    });
+});
+    </script>
+</body>
+</html>
